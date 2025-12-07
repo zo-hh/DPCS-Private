@@ -1,23 +1,25 @@
 #  System Architecture
 
-This document provides a technical deep-dive into the architecture of the **Collaborative Text Editor (CTE)**. The system is designed as a **Distributed, Event-Driven Microservice** architecture that prioritizes low-latency synchronization while ensuring eventual data durability.
+This document provides information into the architecture of the **Collaborative Text Editor (CTE)**. The system is designed as a **Distributed, Event-Driven Microservice** architecture that prioritizes low-latency synchronization while ensuring eventual data durability.
 
 ## 1\. High-Level Architecture Diagram
 ```mermaid
 graph TD
-    ClientA[Client A - React] -- WebSocket --> LB[Load Balancer - Gateway]
-    ClientB[Client B - React] -- WebSocket --> LB
+    ClientA["Client A (React)"] -- WebSocket --> LB["Load Balancer"]
+    ClientB["Client B (React)"] -- WebSocket --> LB
 
     subgraph Backend_Infrastructure
-        LB -- WSS --> NodeService[Node.js Backend Service]
-        NodeService -- Pub/Sub and Cache --> Redis[(Redis - Hot Storage)]
-        NodeService -- Event Stream --> Kafka[(Kafka - Cold Storage)]
+        LB -- WSS --> NodeService["Node.js Backend"]
+        NodeService -- "Pub/Sub & Cache" --> Redis[("Redis - Hot Storage")]
+        NodeService -- "Event Stream" --> Kafka[("Kafka - Cold Storage")]
     end
 
     subgraph Persistence_Layer
-        Kafka -- Consumer --> S3[Snapshot Storage]
-        Kafka -- Consumer --> DB[Metadata DB]
+        Kafka -- Consumer --> S3["Snapshot Storage"]
+        Kafka -- Consumer --> DB["Metadata DB"]
     end
+
+```
    
 
 ### Component Breakdown
@@ -73,17 +75,7 @@ For colliding edits (e.g., two users modifying the exact same character at the e
 
 -----
 
-## 4\. Security Architecture
-
-We prioritize **Role-Based Access Control (RBAC)** to secure documents.
-
-### Authentication (Identity)
-
-  * **Method:** Email-based OTP (One-Time Password).
-  * **Flow:** User requests OTP $\rightarrow$ Server generates code & stores in Redis (TTL 5m) $\rightarrow$ Server sends Email $\rightarrow$ User verifies code.
-  * **Session:** Verified users receive a session token used to establish the WebSocket connection.
-
-### Authorization (Permissions)
+## 4\. Authorization (Permissions)
 
 Permissions are checked at **two gateways**:
 
