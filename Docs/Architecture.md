@@ -4,19 +4,19 @@ This document provides a technical deep-dive into the architecture of the **Coll
 
 ## 1\. High-Level Architecture Diagram
 
-flowchart TD
-    ClientA["Client A (React)"] <-->|WebSocket| LB["Load Balancer / Gateway"]
-    ClientB["Client B (React)"] <-->|WebSocket| LB
+graph TD
+    ClientA[Client A - React] -- WebSocket --> LB[Load Balancer - Gateway]
+    ClientB[Client B - React] -- WebSocket --> LB
 
-    subgraph "Backend Infrastructure"
-        LB <-->|WSS| NodeService["Node.js Backend Service"]
-        NodeService <-->|"Pub/Sub & Cache"| Redis[("Redis - Hot Storage")]
-        NodeService -->|"Event Stream"| Kafka[("Kafka - Cold Storage")]
+    subgraph Backend_Infrastructure
+        LB -- WSS --> NodeService[Node.js Backend Service]
+        NodeService -- Pub/Sub and Cache --> Redis[(Redis - Hot Storage)]
+        NodeService -- Event Stream --> Kafka[(Kafka - Cold Storage)]
     end
 
-    subgraph "Persistence Layer"
-        Kafka -->|Consumer| S3["Snapshot Storage"]
-        Kafka -->|Consumer| DB["Metadata DB"]
+    subgraph Persistence_Layer
+        Kafka -- Consumer --> S3[Snapshot Storage]
+        Kafka -- Consumer --> DB[Metadata DB]
     end
    
 
