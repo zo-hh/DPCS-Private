@@ -1,4 +1,4 @@
-# 📘 Low-Level Design (LLD) & Protocol Specification
+#  Low-Level Design (LLD) & Protocol Specification
 
 This document details the internal logic, class structures, data models, and communication protocols used in the **Collaborative Text Editor (CTE)**. It serves as a technical reference for developers to understand how the system handles state, persistence, and real-time messaging.
 
