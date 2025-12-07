@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: collab-redis
+    ports:
+      - "6380:6379" # Maps to 6380 to avoid Windows conflicts
+    networks:
+      - collab-net
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: collab-zookeeper
+    ports:
+      - "2182:2181" # Maps to 2182 to avoid Windows conflicts
+    networks:
+      - collab-net
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: collab-kafka
+    ports:
+      - "9093:9093" # Expose 9093 to host (leaving 9092 for internal docker)
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "document-edits:1:1"
+      # 🟢 FIX: Define Internal (Docker) and External (Host) Listeners correctly
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+    depends_on:
+      - zookeeper
+    networks:
+      - collab-net
+
+  backend:
+    build: ./backend
+    container_name: collab-backend
+    ports:
+      - "8081:8081"
+    environment:
+      # 🟢 FIX: Point to the Docker service names
+      - REDIS_HOST=redis
+      - KAFKA_BROKER=kafka:9092
+    depends_on:
+      - redis
+      - kafka
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - collab-net
+
+  frontend:
+    build: ./frontend
+    container_name: collab-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8081
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - collab-net
+
+networks:
+  collab-net:
+    driver: bridge
