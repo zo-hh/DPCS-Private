@@ -3,7 +3,7 @@
 This document provides a technical deep-dive into the architecture of the **Collaborative Text Editor (CTE)**. The system is designed as a **Distributed, Event-Driven Microservice** architecture that prioritizes low-latency synchronization while ensuring eventual data durability.
 
 ## 1\. High-Level Architecture Diagram
-
+```mermaid
 graph TD
     ClientA[Client A - React] -- WebSocket --> LB[Load Balancer - Gateway]
     ClientB[Client B - React] -- WebSocket --> LB
