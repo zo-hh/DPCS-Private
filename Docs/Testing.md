@@ -3,7 +3,7 @@
 
 ---
 
-## 1. Introduction & Motivation
+## 1. Introduction
 
 We adopted a rigorous testing strategy to distinguish between:
 * **Verification:** Building the system correctly.
@@ -13,7 +13,7 @@ We designed our testing approach to verify functional requirements like conflict
 
 ---
 
-## 2. Testing Methodology: The "Pyramid" Approach
+## 2. Testing Methodology
 
 Because our CTE is an event-driven, distributed application involving Redis, Kafka, and WebSockets, testing everything manually would be impossible and error-prone. We adopted the **Testing Pyramid** structure to catch bugs at different levels.
 
