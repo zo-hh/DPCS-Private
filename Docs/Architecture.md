@@ -1,25 +1,24 @@
-# 🏛️ System Architecture
+#  System Architecture
 
 This document provides a technical deep-dive into the architecture of the **Collaborative Text Editor (CTE)**. The system is designed as a **Distributed, Event-Driven Microservice** architecture that prioritizes low-latency synchronization while ensuring eventual data durability.
 
 ## 1\. High-Level Architecture Diagram
 
-```mermaid
-graph TD
-    ClientA[Client A (React)] <-->|WebSocket| LB[Load Balancer / Gateway]
-    ClientB[Client B (React)] <-->|WebSocket| LB
+flowchart TD
+    ClientA["Client A (React)"] <-->|WebSocket| LB["Load Balancer / Gateway"]
+    ClientB["Client B (React)"] <-->|WebSocket| LB
 
     subgraph "Backend Infrastructure"
-        LB <-->|WSS| NodeService[Node.js Backend Service]
-        NodeService <-->|Pub/Sub & Cache| Redis[(Redis - Hot Storage)]
-        NodeService -->|Event Stream| Kafka[(Kafka - Cold Storage)]
+        LB <-->|WSS| NodeService["Node.js Backend Service"]
+        NodeService <-->|"Pub/Sub & Cache"| Redis[("Redis - Hot Storage")]
+        NodeService -->|"Event Stream"| Kafka[("Kafka - Cold Storage")]
     end
 
     subgraph "Persistence Layer"
-        Kafka -->|Consumer| S3[Snapshot Storage]
-        Kafka -->|Consumer| DB[Metadata DB]
+        Kafka -->|Consumer| S3["Snapshot Storage"]
+        Kafka -->|Consumer| DB["Metadata DB"]
     end
-```
+   
 
 ### Component Breakdown
 
@@ -37,14 +36,14 @@ graph TD
 
 To meet the non-functional requirement of **\<100ms latency**, we separated the data flow into two distinct paths.
 
-### 🔥 The Hot Path (Real-Time Sync)
+### Real-Time Sync
 
   * **Goal:** Immediate user feedback.
   * **Flow:** `Client -> WebSocket -> Server Memory -> Redis -> Broadcast`.
   * **Mechanism:** When a user types, the delta is sent to the Node.js server. The server immediately updates the in-memory session and Redis cache, then broadcasts the change to all other connected clients.
   * **Latency:** \~50-60ms (Verified via k6 Load Testing).
 
-### 🧊 The Cold Path (Persistence & History)
+### Persistence & History
 
   * **Goal:** Durability and Version Control.
   * **Flow:** `Server -> Kafka Topic -> Persistence Worker`.
