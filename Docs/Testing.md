@@ -1,9 +1,6 @@
 
 # Comprehensive Test Report
 
-**Project:** Real-Time Distributed Collaborative Text Editor (CTE)
-**Date:** December 07, 2025
-
 ---
 
 ## 1. Introduction & Motivation
